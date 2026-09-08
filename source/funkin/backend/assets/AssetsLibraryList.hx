@@ -31,11 +31,15 @@ class AssetsLibraryList extends AssetLibrary {
 	public var transLib:TranslatedAssetLibrary;
 	#end
 
+	public var filesCache:Map<String, Array<String>> = [];
+	public var foldersCache:Map<String, Array<String>> = [];
+
 	public function removeLibrary(lib:AssetLibrary) {
+		filesCache.clear();
+		foldersCache.clear();
 		if (lib != null) {
 			libraries.remove(lib);
 			#if TRANSLATIONS_SUPPORT
-			// TODO: improve this code
 			for(k=>l in libraries) {
 				if(l == null) continue;
 				if(l is TranslatedAssetLibrary) {
@@ -83,6 +87,10 @@ class AssetsLibraryList extends AssetLibrary {
 		return getSpecificPath(id, BOTH);
 
 	public function getFiles(folder:String, source:AssetSource = BOTH):Array<String> {
+		var cacheKey = folder + "|" + source;
+		var cached = filesCache.get(cacheKey);
+		if (cached != null) return cached;
+
 		var content:Array<String> = [];
 		for(k=>l in libraries) {
 			if (shouldSkipLib(l, source)) continue;
@@ -98,10 +106,15 @@ class AssetsLibraryList extends AssetLibrary {
 			}
 			#end
 		}
+		filesCache.set(cacheKey, content);
 		return content;
 	}
 
 	public function getFolders(folder:String, source:AssetSource = BOTH):Array<String> {
+		var cacheKey = folder + "|" + source;
+		var cached = foldersCache.get(cacheKey);
+		if (cached != null) return cached;
+
 		var content:Array<String> = [];
 		for(k=>l in libraries) {
 			if (shouldSkipLib(l, source)) continue;
@@ -117,6 +130,7 @@ class AssetsLibraryList extends AssetLibrary {
 			}
 			#end
 		}
+		foldersCache.set(cacheKey, content);
 		return content;
 	}
 
@@ -199,12 +213,16 @@ class AssetsLibraryList extends AssetLibrary {
 		unloadLibraries();
 
 		libraries = [];
+		filesCache.clear();
+		foldersCache.clear();
 
 		// adds default libraries in again
 		for (d in __defaultLibraries) addLibrary(d);
 	}
 
 	public function addLibrary(lib:AssetLibrary, ?tag:AssetSource, ?addTransLib:Bool = true) {
+		filesCache.clear();
+		foldersCache.clear();
 		libraries.insert(0, lib);
 		if (tag != null) lib.tag = tag;
 		else if (lib.tag == null) lib.tag = MODS;
