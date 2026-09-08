@@ -18,9 +18,12 @@ class Paths
 
 	public static var tempFramesCache:Map<String, FlxFramesCollection> = [];
 
+	public static var pathCache:Map<String, String> = [];
+
 	public static function init() {
 		FlxG.signals.preStateSwitch.add(function() {
 			tempFramesCache.clear();
+			pathCache.clear();
 		});
 	}
 
@@ -29,6 +32,11 @@ class Paths
 		#if (sys && !windows)
 		returnedPath = Path.normalize(returnedPath);
 		if (OpenFlAssets.exists(returnedPath)) return returnedPath;
+
+		var cached = pathCache.get(returnedPath);
+		if (cached != null) return cached;
+
+		var originalRequest:String = returnedPath;
 		var fixedPath:String = library != null ? '$library:assets/$library/' : 'assets/';
 		var parts:Array<String> = returnedPath.split("/");
 		for (it=>part in parts) {
@@ -44,6 +52,7 @@ class Paths
 			}
 		}
 		if (returnedPath.toLowerCase() == fixedPath.toLowerCase()) returnedPath = fixedPath;
+		pathCache.set(originalRequest, returnedPath);
 		#end
 		return returnedPath;
 	}
