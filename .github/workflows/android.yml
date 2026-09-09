@@ -24,7 +24,7 @@ jobs:
         id: setup-ndk
         uses: nttld/setup-ndk@main
         with:
-          ndk-version: r26
+          ndk-version: r25c
       - name: Export NDK path
         run: echo "ANDROID_NDK_HOME=${{ steps.setup-ndk.outputs.ndk-path }}" >> $GITHUB_ENV
       - name: Restore Previous Cache
@@ -69,7 +69,9 @@ jobs:
           haxelib set hxdiscord_rpc git
       - name: Building the game
         run: |
-          haxelib run lime build android -final -D ONLY_ARM64
+          export HXCPP_COMPILE_CACHE=~/.hxcpp
+          export HXCPP_ARM64_TOOLCHAIN=clang
+          haxelib run lime build android -final -D ONLY_ARM64 -D HXCPP_STATIC_LINK
       - name: Uploading artifact (entire build)
         uses: actions/upload-artifact@v4
         with:
