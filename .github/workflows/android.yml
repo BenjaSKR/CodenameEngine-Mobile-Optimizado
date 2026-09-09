@@ -4,6 +4,9 @@ on:
   workflow_call:
 jobs:
   build:
+    permissions:
+      actions: write
+      contents: read
     name: Android Build
     runs-on: ubuntu-latest
     steps:
@@ -110,3 +113,4 @@ jobs:
             .haxelib\
           restore-keys: |
             cache-build-android
+            
